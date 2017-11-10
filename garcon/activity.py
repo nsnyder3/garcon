@@ -56,6 +56,7 @@ ACTIVITY_FAILED = 3
 
 DEFAULT_ACTIVITY_SCHEDULE_TO_START = 600  # 10 minutes
 
+state = {}
 
 class ActivityInstanceNotReadyException(Exception):
     """Exception when an activity instance is not ready.
@@ -321,7 +322,18 @@ class Activity(swf.ActivityWorker, log.GarconLogger):
             context (dict): The flow context.
         """
 
-        return self.runner.execute(self, context)
+        if 'foo' in context:
+            key = '{}.{}'.format(context['foo'], self.name)
+            if key in state:
+                print('Skipping: ', key)
+                return {}
+
+        result = self.runner.execute(self, context)
+
+        if 'foo' in context:
+            key = '{}.{}'.format(context['foo'], self.name)
+            state[key] = 'Done'
+        return result
 
     def hydrate(self, data):
         """Hydrate the task with information provided.
